@@ -23,35 +23,48 @@
         }
 
         /* --- CONFIGURATION D'IMPRESSION (ULTRA-STRICTE) --- */
+       /* --- CONFIGURATION D'IMPRESSION (DENSIFICATION NATIVE) --- */
         @media print {
             @page { margin: 0mm; size: A4; }
             html, body { 
                 margin: 0 !important; padding: 0 !important; background: white !important; 
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; height: 100%;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
-            .no-print { display: none !important; } /* Cache tout ce qui a cette classe */
+            .no-print { display: none !important; }
             
             #app-container { 
-                box-shadow: none !important; margin: 0 !important; width: 210mm !important; min-height: 297mm !important; height: 100%; overflow: hidden;
+                box-shadow: none !important; margin: 0 !important; 
+                width: 210mm !important; height: 297mm !important; 
+                overflow: hidden !important; /* On coupe strictement, mais après avoir réduit les marges */
                 -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
             
-            /* Correction Layout Moderne Print */
+            /* -- OPTIMISATION CHIRURGICALE DES ESPACES -- */
+            /* On gagne de précieux millimètres en réduisant les marges inutiles sur le papier */
             .theme-modern aside {
+                padding: 20px 15px !important; /* Avant: 40px 25px */
                 height: 100% !important; position: absolute; top: 0; bottom: 0; left: 0;
                 background-color: #2c3e50 !important; color: white !important;
-                -webkit-print-color-adjust: exact !important;
-                padding-bottom: 0 !important; /* Gagne de la place en bas */
             }
-            .theme-modern main { margin-left: 30% !important; background-color: white !important; }
             
-            /* Correction Photo Ovale */
-            .photo-frame {
-                width: 140px !important; height: 140px !important; /* Fixe la taille */
-                border-radius: 50% !important;
+            .theme-modern main { 
+                margin-left: 30% !important; 
+                padding: 20px 25px !important; /* Avant: 40px 40px */
+                background-color: white !important; 
             }
 
-            /* On cache le hub de preuves à l'impression pour gagner de la place */
+            /* Réduction des marges entre les blocs d'expérience */
+            header.mb-8 { margin-bottom: 15px !important; padding-bottom: 10px !important; }
+            .mb-5 { margin-bottom: 10px !important; } 
+            .mb-6 { margin-bottom: 15px !important; }
+            .section-title { margin: 15px 0 10px 0 !important; }
+            
+            /* Ajustement fin de la photo pour gagner de la place en haut à gauche */
+            .photo-frame {
+                width: 130px !important; height: 130px !important;
+                margin-bottom: 10px !important;
+            }
+
             .print-hidden { display: none !important; }
         }
 
