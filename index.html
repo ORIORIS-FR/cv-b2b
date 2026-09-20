@@ -268,7 +268,7 @@
       
 <div id="app-container" class="theme-modern">
         
-        <aside>
+ <aside>
             <input type="file" id="photo-upload" style="display:none" accept="image/*" onchange="loadPhoto(this)">
             <div class="photo-frame" onclick="document.getElementById('photo-upload').click()">
                 <img src="photo.jpg" id="profile-img">
@@ -280,37 +280,38 @@
                 <div class="editable" contenteditable="true"><i class="fas fa-phone w-6 text-center text-accent"></i> 07 52 07 46 92</div>
                 <div class="editable" contenteditable="true"><i class="fas fa-envelope w-6 text-center text-accent"></i> patrice.vayne@gmail.com</div>
                 <div class="editable" contenteditable="true">
-    <i class="fab fa-linkedin w-6 text-center text-accent"></i> 
-    <a href="https://linkedin.com/in/patrice-vayne" target="_blank" class="hover:text-accent">linkedin.com/in/patrice-vayne</a>
-</div>        
+                    <i class="fab fa-linkedin w-6 text-center text-accent"></i> 
+                    <a href="https://linkedin.com/in/patrice-vayne" target="_blank" class="hover:text-accent">linkedin.com/in/patrice-vayne</a>
+                </div>        
+            </div> <!-- CORRECTION : Fermeture du bloc contact ajoutée ici -->
+
             <div class="mt-6 pt-4 border-t border-white/20">
-    <h2 class="font-bold text-accent uppercase pb-2 mb-2 text-xs">Écosystème Technique 🚀</h2>
-    
-    <a href="https://cv.orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
-        <i class="fas fa-terminal text-accent w-5 text-center text-lg"></i>
-        <div class="leading-tight">
-            <strong class="block text-sm">Hub Principal</strong>
-            <span class="text-xs text-gray-300">cv.orioris.com</span>
-        </div>
-    </a>
+                <h2 class="font-bold text-accent uppercase pb-2 mb-2 text-xs">Écosystème Technique 🚀</h2>
+                
+                <a href="https://cv.orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
+                    <i class="fas fa-terminal text-accent w-5 text-center text-lg"></i>
+                    <div class="leading-tight">
+                        <strong class="block text-sm">Hub Principal</strong>
+                        <span class="text-xs text-gray-300">cv.orioris.com</span>
+                    </div>
+                </a>
 
-    <a href="https://git.orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
-        <i class="fab fa-github text-accent w-5 text-center text-lg"></i>
-        <div class="leading-tight">
-            <strong class="block text-sm">Dépôts GitHub</strong>
-            <span class="text-xs text-gray-300">Infrastructure & Code</span>
-        </div>
-    </a>
+                <a href="https://git.orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
+                    <i class="fab fa-github text-accent w-5 text-center text-lg"></i>
+                    <div class="leading-tight">
+                        <strong class="block text-sm">Dépôts GitHub</strong>
+                        <span class="text-xs text-gray-300">Infrastructure & Code</span>
+                    </div>
+                </a>
 
-    <a href="https://orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 text-white hover:text-accent transition-colors">
-        <i class="fas fa-project-diagram text-accent w-5 text-center text-lg"></i>
-        <div class="leading-tight">
-            <strong class="block text-sm">Projet Orioris</strong>
-            <span class="text-xs text-gray-300">Architecture Web Complète</span>
-        </div>
-    </a>
-</div>
-</div>
+                <a href="https://orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 text-white hover:text-accent transition-colors">
+                    <i class="fas fa-project-diagram text-accent w-5 text-center text-lg"></i>
+                    <div class="leading-tight">
+                        <strong class="block text-sm">Projet Orioris</strong>
+                        <span class="text-xs text-gray-300">Architecture Web Complète</span>
+                    </div>
+                </a>
+            </div>
 
             <div class="mt-8 pt-4 border-t border-white/20">
                 <h2 class="font-bold text-accent uppercase pb-2 mb-2 text-xs">Performance Hub 🚀</h2>
@@ -321,9 +322,7 @@
                         <strong>Dossier Preuves & Chiffres</strong>
                         <span>Rapports d'activité certifiés</span>
                     </div>
-                </a>
-               
-                </a>
+                </a> <!-- CORRECTION : Le </a> parasite qui était en dessous a été supprimé -->
 
                 <a href="https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link" target="_blank" class="proof-badge group">
                     <i class="fas fa-ruler-combined group-hover:scale-110 transition-transform"></i>
@@ -334,24 +333,22 @@
                 </a>
             </div>
 
-       <div class="mt-6">
-    <h2 class="font-bold text-accent uppercase border-b border-white/20 pb-1 mb-3">Compétences</h2>
-    
-    <div class="mb-4">
-        <strong class="text-accent editable" contenteditable="true">Change Management & Sales</strong>
-        <div class="text-sm editable mt-1" contenteditable="true">Adoption Digitale, Intégration SaaS, Négociation Complexe, Gestion de comptes (600+)</div>
-    </div>
-    
-    <div class="mb-4">
-        <strong class="text-accent editable" contenteditable="true">IA Agentique & Outils</strong>
-        <div class="text-sm editable mt-1" contenteditable="true">
-            n8n, LangGraph, CrewAI, Claude Code, Docker, GitHub, Obsidian
-        </div>
-    </div>
-</div>            
-</div>
+            <div class="mt-6">
+                <h2 class="font-bold text-accent uppercase border-b border-white/20 pb-1 mb-3">Compétences</h2>
+                
+                <div class="mb-4">
+                    <strong class="text-accent editable" contenteditable="true">Change Management & Sales</strong>
+                    <div class="text-sm editable mt-1" contenteditable="true">Adoption Digitale, Intégration SaaS, Négociation Complexe, Gestion de comptes (600+)</div>
+                </div>
+                
+                <div class="mb-4">
+                    <strong class="text-accent editable" contenteditable="true">IA Agentique & Outils</strong>
+                    <div class="text-sm editable mt-1" contenteditable="true">
+                        n8n, LangGraph, CrewAI, Claude Code, Docker, GitHub, Obsidian
+                    </div>
+                </div>
+            </div>            
         </aside>
-
         <main>
             <header class="mb-8 border-b-2 border-primary pb-4">
                 <h1 class="font-bold text-primary uppercase editable" contenteditable="true">Patrice Vayne</h1>
@@ -663,6 +660,6 @@ async function askBot() {
         Analyser mon profil avec l'IA
     </span>
 
-</button><
+</button>
 </body>
 </html>
