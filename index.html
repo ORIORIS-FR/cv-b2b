@@ -400,13 +400,14 @@
     <script>
         const CHAT_ENDPOINT = 'https://n8n.orioris.com/webhook/question-cv-patrice';
         const EVENT_ENDPOINT = 'https://n8n.orioris.com/webhook/cv-event';
-        const LINK_TOKEN_PATTERN = /\[\[LINK:(cv|git|orioris|preuves|archives)\]\]/gi;
+        const LINK_TOKEN_PATTERN = /\[\[LINK:(cv|git|orioris|preuves|archives|assessfirst)\]\]/gi;
         const ANSWER_LINKS = Object.freeze({
             cv: { label: 'CV interactif', href: 'https://cv.orioris.com', event: 'click_orioris' },
             git: { label: 'Dépôts GitHub', href: 'https://git.orioris.com', event: 'click_git' },
             orioris: { label: 'Projet ORIORIS', href: 'https://orioris.com', event: 'click_orioris' },
             preuves: { label: 'Preuves & chiffres', href: 'https://drive.google.com/drive/folders/1cxoLwXPXy0IUmi6_1hh8_lcT-3sQ7GhV?usp=drive_link', event: 'click_preuves' },
-            archives: { label: 'Archives techniques & 3D', href: 'https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link', event: 'click_preuves' }
+            archives: { label: 'Archives techniques & 3D', href: 'https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link', event: 'click_preuves' },
+            assessfirst: { label: 'Rapport AssessFirst (PDF)', href: 'https://cv.orioris.com/AssessFirst.pdf', event: 'click_preuves' }
         });
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -601,3 +602,4 @@
     </button>
 </body>
 </html>
+
