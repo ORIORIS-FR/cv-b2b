@@ -6,7 +6,7 @@
 
 Trois flux complémentaires : **répondre**, **compter les interactions** et **alimenter la recherche documentaire**.
 
-[🌐 Voir le site](https://cv.orioris.com) · [💻 Projets GitHub](https://git.orioris.com) · [✨ ORIORIS](https://orioris.com)
+[🌐 cv.orioris.com](https://cv.orioris.com) · [💻 Projets GitHub](https://git.orioris.com) · [✨ ORIORIS](https://orioris.com)
 
 </div>
 
