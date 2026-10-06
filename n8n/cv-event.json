@@ -1,0 +1,63 @@
+{
+  "name": "cv-event",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cv-event",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://cv.orioris.com"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-304, 0],
+      "id": "c4a92efd-0aa0-4585-950b-c8ec49607cbb",
+      "name": "Webhook événement CV"
+    },
+    {
+      "parameters": {
+        "jsCode": "const request = $input.first().json;\nconst body = request.body && typeof request.body === 'object' ? request.body : request;\nconst allowedEvents = new Set(['page_view', 'chat_open', 'question', 'click_git', 'click_orioris', 'click_preuves']);\nconst clean = (value, max = 80) => typeof value === 'string' ? value.trim().slice(0, max) : '';\nconst event = clean(body.event, 32);\nconst sessionId = clean(body.sessionId, 64);\nif (!allowedEvents.has(event) || !/^[A-Za-z0-9_-]{8,64}$/.test(sessionId)) {\n  return [{ json: { status: 400, ok: false, error: 'Événement invalide.' } }];\n}\n\nconst state = $getWorkflowStaticData('global');\nstate.cvAnalytics = state.cvAnalytics || { totals: {}, campaigns: {}, sessions: {}, updatedAt: null };\nconst analytics = state.cvAnalytics;\nconst now = Date.now();\nconst minuteAgo = now - 60 * 1000;\nconst hourAgo = now - 60 * 60 * 1000;\nconst recent = (analytics.sessions[sessionId] || []).filter((timestamp) => timestamp > hourAgo);\nif (recent.filter((timestamp) => timestamp > minuteAgo).length >= 60 || recent.length >= 500) {\n  analytics.sessions[sessionId] = recent;\n  return [{ json: { status: 429, ok: false, error: 'Trop d’événements.' } }];\n}\nrecent.push(now);\nanalytics.sessions[sessionId] = recent;\nfor (const [key, timestamps] of Object.entries(analytics.sessions)) {\n  const active = timestamps.filter((timestamp) => timestamp > hourAgo);\n  if (active.length) analytics.sessions[key] = active;\n  else delete analytics.sessions[key];\n}\n\nconst source = clean(body.source) || 'direct';\nconst company = clean(body.company) || 'non_renseignee';\nconst target = clean(body.target);\nconst campaignKey = `${source}::${company}`;\nanalytics.totals[event] = (analytics.totals[event] || 0) + 1;\nanalytics.campaigns[campaignKey] = analytics.campaigns[campaignKey] || { source, company, events: {}, lastSeenAt: null };\nanalytics.campaigns[campaignKey].events[event] = (analytics.campaigns[campaignKey].events[event] || 0) + 1;\nanalytics.campaigns[campaignKey].lastSeenAt = new Date(now).toISOString();\nanalytics.updatedAt = new Date(now).toISOString();\n\nreturn [{ json: { status: 202, ok: true, event, source, company, target } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-80, 0],
+      "id": "f15e67ae-d115-4d29-b25a-844ce3f68cf0",
+      "name": "Valider et agréger"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: $json.ok, error: $json.error || undefined } }}",
+        "options": {
+          "responseCode": "={{ $json.status }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [160, 0],
+      "id": "cb51a9ac-a1d2-4813-a789-fbdb10c96a9c",
+      "name": "Répondre"
+    }
+  ],
+  "connections": {
+    "Webhook événement CV": {
+      "main": [[{"node": "Valider et agréger", "type": "main", "index": 0}]]
+    },
+    "Valider et agréger": {
+      "main": [[{"node": "Répondre", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false,
+    "executionTimeout": 15
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

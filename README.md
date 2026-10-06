@@ -1,102 +1,79 @@
-<div align="center">
-  <img src="banniere_orioris.jpg" alt="ORIORIS Cyber Security" width="100%" />
-  
-  <h1>ORIORIS | CV Interactif & Clone Numérique</h1>
-  
-  <p><b>Démonstrateur Technique : Agent IA conversationnel couplé à une base vectorielle locale (RAG).</b></p>
+# ORIORIS — CV interactif avec assistant RAG
 
-  <p>
-    <img src="https://img.shields.io/badge/Frontend-Vanilla_JS_%2B_Tailwind-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Frontend"/>
-    <img src="https://img.shields.io/badge/Orchestration-n8n-FF5722?style=for-the-badge&logo=n8n&logoColor=white" alt="n8n"/>
-    <img src="https://img.shields.io/badge/Vector_DB-Qdrant-CD5C5C?style=for-the-badge&logo=database&logoColor=white" alt="Qdrant"/>
-    <img src="https://img.shields.io/badge/LLM-Local_Proxy-483699?style=for-the-badge&logo=openai&logoColor=white" alt="LLM"/>
-  </p>
-</div>
+Ce dépôt publie le CV disponible sur [cv.orioris.com](https://cv.orioris.com) et documente les workflows n8n associés. Le chat répond à partir d'une base documentaire RAG ; il doit distinguer les expériences professionnelles, les projets personnels, les compétences en apprentissage et les informations absentes.
 
----
+## Périmètre
 
-## 🚀 Le Projet : "Answer Engine" B2B & Cyber
+- `index.html` : CV et interface du chat.
+- `n8n/question-cv-patrice.v2.json` : export n8n assaini du workflow conversationnel.
+- `n8n/cv-event.json` : instrumentation légère et agrégée.
+- `rag/` : notes canoniques destinées à la collection `RAG_CV`.
+- `n8n/*.md` : documentation d'exploitation, sans credentials.
 
-Ce dépôt héberge mon CV numérique, mais sa véritable valeur réside dans son **infrastructure**. 
-Après 20 ans d'expérience dans le déploiement logiciel B2B et la gestion de comptes stratégiques, ma transition vers la Cybersécurité (AIS) s'accompagne d'une exigence : la souveraineté des données.
-
-Ce projet démontre ma capacité à concevoir un **système de Retrieval-Augmented Generation (RAG) 100% local et sécurisé**, intégré à une interface web fluide pour interagir avec les recruteurs.
-
----
-
-## 🏗️ Architecture Logique (VSL)
-
-Le système est divisé en deux pipelines distincts orchestrés par n8n :
-1. **L'Ingestion (Asynchrone) :** Traitement des fichiers locaux, découpage sémantique et vectorisation.
-2. **L'Inférence (Temps Réel) :** L'interface web interroge l'agent qui croise la mémoire (Vector Store) avec le LLM.
+## Architecture
 
 ```mermaid
-graph TD
-    %% --- Interface Web (Frontend) ---
-    subgraph Frontend [cv.orioris.com]
-        UI[Interface HTML/Tailwind<br/>Moteur Markdown]
-        BTN(Bouton Chat IA)
-        UI --- BTN
-    end
+flowchart LR
+    CV[cv.orioris.com] -->|question + sessionId| Q[/question-cv-patrice/]
+    Q --> V[Validation et limitation]
+    V --> A[Agent factuel]
+    A --> R[(Qdrant RAG_CV)]
+    A --> O[Réponse Markdown]
+    O --> S[DOMPurify + liens contrôlés]
 
-    %% --- Le Bunker IA (Orchestration n8n) ---
-    subgraph Bunker [Bunker IA : Infrastructure Docker Locale]
-        direction TB
-        
-        %% Pipeline Inférence
-        subgraph Inference [Pipeline d'Inférence Temps Réel]
-            WH[Webhook POST<br/>/question-cv-patrice]
-            AGENT{AI Agent<br/>Modèle: bunker-auto}
-            MEM[Simple Memory<br/>Contexte Session]
-        end
-        
-        %% Pipeline Ingestion
-        subgraph Ingestion [Pipeline d'Ingestion RAG_TEST]
-            TRIG[Local File Trigger]
-            CHUNK[Split in Chunks<br/>Taille: 1500 / Overlap: 300]
-            EMBED[Ollama Embeddings]
-        end
-        
-        %% Persistance Vectorielle
-        VDB[(Qdrant Vector Store<br/>Mémoire des Expériences)]
-    end
-
-    %% --- Les Flux ---
-    BTN -->|Requête Utilisateur| WH
-    WH --> AGENT
-    MEM -.->|Contexte| AGENT
-    
-    TRIG -->|Lecture fichiers .md| CHUNK
-    CHUNK -->|Vectorisation| EMBED
-    EMBED -->|Stockage Indexé| VDB
-    
-    VDB -.->|Retrieval RAG| AGENT
-    AGENT -->|Réponse formatée| UI
-
-    %% --- Styles ---
-    style Frontend fill:#1e1e1e,stroke:#38B2AC,stroke-width:2px,color:#fff
-    style Bunker fill:#0d1117,stroke:#FF5722,stroke-width:2px,color:#fff
-    style Inference fill:#2d3436,stroke:#fff,color:#fff
-    style Ingestion fill:#2d3436,stroke:#fff,color:#fff
-    style AGENT fill:#8e44ad,stroke:#fff,color:#fff
-    style VDB fill:#c0392b,stroke:#fff,color:#fff
+    CV -->|événements sans IP| E[/cv-event/]
+    E --> G[Agrégats n8n]
 ```
 
----
-## 📂 Contenu du Dépôt 
+## Sécurité du frontend
 
-index.html : Interface principale avec design monolithique et intégration de Tailwind CSS. Contient le script asynchrone de connexion au webhook n8n, la gestion du statut de l'IA et le parsing Markdown des réponses.
+- Les questions utilisateur sont ajoutées avec `textContent`.
+- Le Markdown de l'agent est converti par Marked puis nettoyé par DOMPurify.
+- Les balises de lien, scripts, styles, SVG, formulaires et contenus embarqués sont interdits dans la réponse.
+- L'agent ne renvoie que des marqueurs de lien contrôlés (`[[LINK:git]]`, par exemple). Le frontend associe ces marqueurs aux URL autorisées.
+- Les liens externes utilisent `rel="noopener noreferrer"`.
 
-Les notes documentaires (format Obsidian) décrivant l'ingénierie des flux n8n :
+## Analytics légères
 
-♾️Agent CV - Patrice Vayne.md : Documentation du workflow question-cv-patrice. Définit l'agent conversationnel, sa mémoire de session et sa connexion au LLM bunker-auto.
+Le frontend envoie les événements suivants à `/webhook/cv-event` :
 
-♾️Pipeline d'Ingestion RAG (RAG_TEST).md : Documentation de l'automate d'alimentation. Surveille les fichiers, les découpe (chunks) et les stocke dans Qdrant.
+- `page_view`
+- `chat_open`
+- `question` (longueur seulement, sans dupliquer le texte)
+- `click_git`
+- `click_orioris`
+- `click_preuves`
 
-## ⚙️ Mécanique Interne & Sécurité
+Le `sessionId` est conservé uniquement pendant l'onglet via `sessionStorage`. Les paramètres `src`/`source` et `company` présents dans l'URL sont transmis après troncature. Aucun identifiant publicitaire, cookie tiers, User-Agent ou IP n'est ajouté par le frontend.
 
-Souveraineté : Le système de chat n'appelle pas directement des API publiques (OpenAI/Anthropic). Il passe par un routeur interne (litellm_bunker) qui permet de basculer instantanément sur des modèles open-source locaux (Mistral, Llama 3) via Ollama en cas de besoin.
+Le workflow `cv-event` valide les événements, applique une limite par session et ne conserve que des compteurs agrégés dans les données statiques du workflow. Ses exécutions réussies et échouées sont configurées pour ne pas être sauvegardées, afin d'éviter que les en-têtes réseau bruts ne deviennent une base analytics implicite.
 
-Vectorisation Contrôlée : Le chunking est calibré manuellement (1500 tokens / overlap 300) pour garantir que le contexte renvoyé à l'agent lors des requêtes métier (ex: "Quelles sont ses compétences en CAD/CRM ?") soit pertinent et sans hallucination.
+## Domaine du webhook
 
-Design VSL (Visual Spatial Learning) : Le code frontend est optimisé pour une charge cognitive minimale, avec un parsing Markdown immédiat des réponses de l'IA.
+Vérification du 6 octobre 2026 :
+
+- `https://n8n.orioris.com/webhook/question-cv-patrice` répond au pré-contrôle CORS depuis `https://cv.orioris.com` ;
+- `https://api.orioris.com/webhook/question-cv-patrice` est bloqué par Cloudflare ;
+- le frontend conserve donc `n8n.orioris.com` ;
+- le nœud n8n doit porter un nom fonctionnel (`Webhook question CV`) et non une URL devenue ambiguë.
+
+## Import n8n
+
+Les exports publics ne contiennent aucun credential ni identifiant d'instance. Après import :
+
+1. rattacher les credentials existants au modèle, à Qdrant et à Ollama ;
+2. vérifier que la collection est `RAG_CV` ;
+3. publier d'abord le workflow `cv-event` ;
+4. remplacer ensuite le workflow `question-cv-patrice` en conservant son chemin public ;
+5. tester une question valide, une question trop longue et la limite de requêtes ;
+6. réindexer les notes du dossier `rag/` dans `RAG_CV`.
+
+Ne jamais versionner de secret, de jeton, de valeur `.env`, d'identifiant d'instance ou d'export contenant des credentials privés.
+
+## Tests
+
+```text
+node tests/verify.mjs
+```
+
+Le script vérifie les invariants XSS, les URL conservées, l'instrumentation, la validité JSON et l'absence de bloc `credentials` dans les exports publics.
