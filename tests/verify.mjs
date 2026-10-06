@@ -20,6 +20,7 @@ for (const url of [
   'https://cv.orioris.com',
   'https://git.orioris.com',
   'https://orioris.com',
+  'https://cv.orioris.com/AssessFirst.pdf',
   'https://drive.google.com/drive/folders/1cxoLwXPXy0IUmi6_1hh8_lcT-3sQ7GhV?usp=drive_link',
   'https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link'
 ]) {
@@ -54,6 +55,7 @@ const questionWorkflow = JSON.parse(await read('n8n/question-cv-patrice.v2.json'
 const agent = questionWorkflow.nodes.find((node) => node.name === 'AI Agent');
 assert.ok(agent.parameters.options.systemMessage.includes("Je ne peux pas le confirmer avec les éléments disponibles."));
 assert.ok(agent.parameters.options.systemMessage.includes('Ne produis jamais de HTML'));
+assert.ok(agent.parameters.options.systemMessage.includes('[[LINK:assessfirst]]'));
 assert.ok(!agent.parameters.options.systemMessage.includes('<a href='));
 assert.equal(questionWorkflow.nodes.find((node) => node.name === 'Qdrant Vector Store').parameters.qdrantCollection.value, '=RAG_CV');
 
@@ -77,3 +79,4 @@ for (const script of inlineScripts) {
 }
 
 console.log(`OK — frontend, ${workflowFiles.length} workflows et ${ragFiles.length} notes RAG vérifiés.`);
+
