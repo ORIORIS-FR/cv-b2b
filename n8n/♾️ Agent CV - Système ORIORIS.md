@@ -52,6 +52,8 @@ La limite utilise les données statiques du workflow. Elle est volontairement si
 - proposer au plus deux marqueurs de lien parmi `cv`, `git`, `orioris`, `preuves` et `archives` ;
 - laisser le frontend rendre les URL autorisées et assainir le Markdown.
 
+Le prompt énumère les cinq notes réellement indexées lorsqu'on demande la liste des documents. Ces notes ne disposent pas automatiquement d'URL publiques : les dossiers Drive `preuves` et `archives` sont des liens distincts. Le rapport public `AssessFirst.pdf`, disponible sur le domaine du CV, est lui aussi distinct de la note RAG AssessFirst. Lorsque ce rapport est demandé, l'agent propose le marqueur `assessfirst`, rendu par le frontend en lien direct vers le PDF.
+
 Le prompt complet et le workflow importable se trouvent dans `question-cv-patrice.v2.json`.
 
 ## Confidentialité
@@ -70,3 +72,4 @@ Le domaine fonctionnel vérifié est `n8n.orioris.com`. Le nom historique du nœ
 4. Tester le workflow en mode manuel.
 5. Publier en conservant le chemin `/webhook/question-cv-patrice`.
 6. Tester depuis l'origine `https://cv.orioris.com`.
+
