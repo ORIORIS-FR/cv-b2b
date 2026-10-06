@@ -1,13 +1,22 @@
 # 🟧 Ingestion RAG_TEST
 
-Le workflow d'ingestion prépare les documents que l'assistant du CV peut rechercher. Il fonctionne séparément du workflow qui répond aux visiteurs. Les notes source restent dans un espace privé, **pas dans ce dépôt GitHub**.
+Le workflow d'ingestion prépare les documents que l'assistant du CV peut rechercher. Il fonctionne séparément du workflow qui répond aux visiteurs. Les notes source restent dans un espace privé et ne figurent pas dans les fichiers actuels de ce dépôt GitHub.
 
 ## Le trajet d'une note
 
-```text
-Note locale → détection du fichier → lecture → découpage en passages
-            → embeddings Ollama → collection Qdrant RAG_CV
-            → recherche par l'assistant lors d'une question
+```mermaid
+flowchart LR
+    N["Notes locales privées"] --> T["Détection ajout / modification"]
+    T --> F["Lecture du fichier"]
+    F --> L["Chargement du texte"]
+    L --> S["Découpage en passages"]
+    S --> E["Embeddings Ollama"]
+    E --> Q[("Qdrant RAG_CV")]
+    Q --> A["Recherche par l'agent"]
+    style N fill:#3A9D77,color:#fff,stroke:#226348
+    style T fill:#137C9B,color:#fff,stroke:#0B5065
+    style S fill:#DE8C38,color:#111,stroke:#A85E17
+    style Q fill:#5B65B8,color:#fff,stroke:#343C84
 ```
 
 Le déclencheur local réagit aux ajouts et modifications dans le dossier monté pour n8n. Un nœud lit chaque fichier ; le chargeur de documents et le découpeur préparent des passages. Ollama calcule leurs embeddings, puis le nœud Qdrant les insère dans `RAG_CV`.
