@@ -1,79 +1,40 @@
-# ORIORIS — CV interactif avec assistant RAG
+<div align="center">
 
-Ce dépôt publie le CV disponible sur [cv.orioris.com](https://cv.orioris.com) et documente les workflows n8n associés. Le chat répond à partir d'une base documentaire RAG ; il doit distinguer les expériences professionnelles, les projets personnels, les compétences en apprentissage et les informations absentes.
+![Bannière ORIORIS](banniere_orioris.jpg)
 
-## Périmètre
+# CV interactif ORIORIS
 
-- `index.html` : CV et interface du chat.
-- `n8n/question-cv-patrice.v2.json` : export n8n assaini du workflow conversationnel.
-- `n8n/cv-event.json` : instrumentation légère et agrégée.
-- `rag/` : notes canoniques destinées à la collection `RAG_CV`.
-- `n8n/*.md` : documentation d'exploitation, sans credentials.
+Un CV à parcourir, avec un assistant qui répond à partir de documents vérifiables.
 
-## Architecture
+[🌐 Voir le CV](https://cv.orioris.com) · [💻 Projets GitHub](https://git.orioris.com) · [✨ Découvrir ORIORIS](https://orioris.com)
 
-```mermaid
-flowchart LR
-    CV[cv.orioris.com] -->|question + sessionId| Q[/question-cv-patrice/]
-    Q --> V[Validation et limitation]
-    V --> A[Agent factuel]
-    A --> R[(Qdrant RAG_CV)]
-    A --> O[Réponse Markdown]
-    O --> S[DOMPurify + liens contrôlés]
+</div>
 
-    CV -->|événements sans IP| E[/cv-event/]
-    E --> G[Agrégats n8n]
-```
+---
 
-## Sécurité du frontend
+## 🟦 Ce que fait le site
 
-- Les questions utilisateur sont ajoutées avec `textContent`.
-- Le Markdown de l'agent est converti par Marked puis nettoyé par DOMPurify.
-- Les balises de lien, scripts, styles, SVG, formulaires et contenus embarqués sont interdits dans la réponse.
-- L'agent ne renvoie que des marqueurs de lien contrôlés (`[[LINK:git]]`, par exemple). Le frontend associe ces marqueurs aux URL autorisées.
-- Les liens externes utilisent `rel="noopener noreferrer"`.
+Le CV présente les expériences et projets. Le chat répond aux questions en distinguant les faits documentés, les projets personnels et les informations qu'il ne peut pas confirmer. Les liens proposés par l'assistant sont contrôlés par la page web ; ses réponses Markdown sont assainies avant affichage.
 
-## Analytics légères
+## 🟧 Comment fonctionne le RAG
 
-Le frontend envoie les événements suivants à `/webhook/cv-event` :
+Les notes destinées à l'assistant restent **hors de ce dépôt public**. Le workflow d'ingestion `RAG_TEST` lit ces fichiers dans un espace privé, les découpe, calcule leurs représentations avec Ollama et les insère dans la collection Qdrant `RAG_CV`. Le chat recherche ensuite des passages pertinents avant de répondre.
 
-- `page_view`
-- `chat_open`
-- `question` (longueur seulement, sans dupliquer le texte)
-- `click_git`
-- `click_orioris`
-- `click_preuves`
+➡️ [Comprendre le workflow d'ingestion](n8n/%E2%99%BE%EF%B8%8FRAG_TEST%20%28Ingestion%20Locale%29.md)
 
-Le `sessionId` est conservé uniquement pendant l'onglet via `sessionStorage`. Les paramètres `src`/`source` et `company` présents dans l'URL sont transmis après troncature. Aucun identifiant publicitaire, cookie tiers, User-Agent ou IP n'est ajouté par le frontend.
+## 🟩 À quoi sert `cv-event.json` ?
 
-Le workflow `cv-event` valide les événements, applique une limite par session et ne conserve que des compteurs agrégés dans les données statiques du workflow. Ses exécutions réussies et échouées sont configurées pour ne pas être sauvegardées, afin d'éviter que les en-têtes réseau bruts ne deviennent une base analytics implicite.
+C'est l'export du petit workflow n8n qui **compte l'usage du CV**. Il reçoit six types d'événements : `page_view`, `chat_open`, `question`, `click_git`, `click_orioris` et `click_preuves`.
 
-## Domaine du webhook
+La page envoie un identifiant de session temporaire et, s'ils figurent dans l'URL, les paramètres `source` et `company`. Pour `question`, l'événement ne recopie pas le texte saisi. Le workflow valide les événements, limite leur fréquence et conserve des compteurs agrégés ; il ne stocke pas l'adresse IP brute comme donnée d'analytics. Ce n'est **pas** le workflow qui répond aux questions.
 
-Vérification du 6 octobre 2026 :
+## 🟪 Les fichiers utiles
 
-- `https://n8n.orioris.com/webhook/question-cv-patrice` répond au pré-contrôle CORS depuis `https://cv.orioris.com` ;
-- `https://api.orioris.com/webhook/question-cv-patrice` est bloqué par Cloudflare ;
-- le frontend conserve donc `n8n.orioris.com` ;
-- le nœud n8n doit porter un nom fonctionnel (`Webhook question CV`) et non une URL devenue ambiguë.
+| Fichier | Rôle |
+| --- | --- |
+| `index.html` | CV et interface du chat |
+| `n8n/question-cv-patrice.json` | Export du workflow de questions/réponses |
+| `n8n/cv-event.json` | Export des compteurs d'événements |
+| `n8n/♾️RAG_TEST (Ingestion Locale).md` | Explication de l'ingestion documentaire |
 
-## Import n8n
-
-Les exports publics ne contiennent aucun credential ni identifiant d'instance. Après import :
-
-1. rattacher les credentials existants au modèle, à Qdrant et à Ollama ;
-2. vérifier que la collection est `RAG_CV` ;
-3. publier d'abord le workflow `cv-event` ;
-4. remplacer ensuite le workflow `question-cv-patrice` en conservant son chemin public ;
-5. tester une question valide, une question trop longue et la limite de requêtes ;
-6. réindexer les notes du dossier `rag/` dans `RAG_CV`.
-
-Ne jamais versionner de secret, de jeton, de valeur `.env`, d'identifiant d'instance ou d'export contenant des credentials privés.
-
-## Tests
-
-```text
-node tests/verify.mjs
-```
-
-Le script vérifie les invariants XSS, les URL conservées, l'instrumentation, la validité JSON et l'absence de bloc `credentials` dans les exports publics.
+Les exports publics ne contiennent pas de credentials. Les notes personnelles et la configuration privée ne font pas partie de ce dépôt.
