@@ -2,39 +2,45 @@
 
 ![Bannière ORIORIS](banniere_orioris.jpg)
 
-# CV interactif ORIORIS
+# Les workflows du CV interactif
 
-Un CV à parcourir, avec un assistant qui répond à partir de documents vérifiables.
+Trois flux complémentaires : **répondre**, **compter les interactions** et **alimenter la recherche documentaire**.
 
-[🌐 Voir le CV](https://cv.orioris.com) · [💻 Projets GitHub](https://git.orioris.com) · [✨ Découvrir ORIORIS](https://orioris.com)
+[🌐 Voir le site](https://cv.orioris.com) · [💻 Projets GitHub](https://git.orioris.com) · [✨ ORIORIS](https://orioris.com)
 
 </div>
 
 ---
 
-## 🟦 Ce que fait le site
+## 🎨 Vue d'ensemble
 
-Le CV présente les expériences et projets. Le chat répond aux questions en distinguant les faits documentés, les projets personnels et les informations qu'il ne peut pas confirmer. Les liens proposés par l'assistant sont contrôlés par la page web ; ses réponses Markdown sont assainies avant affichage.
+```mermaid
+flowchart LR
+    CV[🌐 Interface du CV] --> Q[🟦 Questions / réponses]
+    CV --> E[🟩 Événements]
+    N[🔒 Notes locales] --> I[🟧 Ingestion RAG_TEST]
+    I --> R[(RAG_CV)]
+    R --> Q
+    E --> C[Compteurs agrégés]
+    style Q fill:#137C9B,color:#fff,stroke:#0B5065
+    style E fill:#3A9D77,color:#fff,stroke:#226348
+    style I fill:#DE8C38,color:#111,stroke:#A85E17
+```
 
-## 🟧 Comment fonctionne le RAG
+## 🟦 Questions et réponses
 
-Les notes destinées à l'assistant restent **hors de ce dépôt public**. Le workflow d'ingestion `RAG_TEST` lit ces fichiers dans un espace privé, les découpe, calcule leurs représentations avec Ollama et les insère dans la collection Qdrant `RAG_CV`. Le chat recherche ensuite des passages pertinents avant de répondre.
+Le [modèle public du workflow](n8n/question-cv.json) reçoit une question, la valide, consulte la collection documentaire `RAG_CV` et renvoie une réponse factuelle en Markdown. La page gère elle-même les liens autorisés et nettoie le texte avant affichage.
 
-➡️ [Comprendre le workflow d'ingestion](n8n/%E2%99%BE%EF%B8%8FRAG_TEST%20%28Ingestion%20Locale%29.md)
+Cet export est **dépersonnalisé** : il montre la logique du workflow sans nom de personne ni adresse de production. [Explication courte](n8n/%E2%99%BE%EF%B8%8F%20Agent%20CV%20-%20Syst%C3%A8me%20ORIORIS.md).
 
-## 🟩 À quoi sert `cv-event.json` ?
+## 🟩 Événements — `cv-event.json`
 
-C'est l'export du petit workflow n8n qui **compte l'usage du CV**. Il reçoit six types d'événements : `page_view`, `chat_open`, `question`, `click_git`, `click_orioris` et `click_preuves`.
+Le [workflow d'événements](n8n/cv-event.json) compte six actions : `page_view`, `chat_open`, `question`, `click_git`, `click_orioris` et `click_preuves`. Il valide les événements, limite leur fréquence et agrège les compteurs par source et entreprise lorsqu'elles sont indiquées dans l'URL.
 
-La page envoie un identifiant de session temporaire et, s'ils figurent dans l'URL, les paramètres `source` et `company`. Pour `question`, l'événement ne recopie pas le texte saisi. Le workflow valide les événements, limite leur fréquence et conserve des compteurs agrégés ; il ne stocke pas l'adresse IP brute comme donnée d'analytics. Ce n'est **pas** le workflow qui répond aux questions.
+L'événement `question` ne recopie pas le texte de la question. Le workflow n'enregistre pas d'IP brute comme donnée d'analytics. Il est distinct du workflow qui répond au chat.
 
-## 🟪 Les fichiers utiles
+## 🟧 Ingestion — `RAG_TEST`
 
-| Fichier | Rôle |
-| --- | --- |
-| `index.html` | CV et interface du chat |
-| `n8n/question-cv-patrice.json` | Export du workflow de questions/réponses |
-| `n8n/cv-event.json` | Export des compteurs d'événements |
-| `n8n/♾️RAG_TEST (Ingestion Locale).md` | Explication de l'ingestion documentaire |
+Le [pipeline d'ingestion](n8n/%E2%99%BE%EF%B8%8FRAG_TEST%20%28Ingestion%20Locale%29.md) lit des notes locales, les découpe en passages, calcule leurs embeddings avec Ollama et les insère dans Qdrant `RAG_CV`. Le workflow de questions utilise ensuite cette collection pour retrouver des éléments pertinents.
 
-Les exports publics ne contiennent pas de credentials. Les notes personnelles et la configuration privée ne font pas partie de ce dépôt.
+Les notes source, les credentials et la configuration privée ne figurent pas dans les fichiers actuels du dépôt. Cette documentation décrit le mécanisme, pas le contenu des notes.
