@@ -7,8 +7,10 @@ Ce dépôt publie le CV disponible sur [cv.orioris.com](https://cv.orioris.com) 
 - `index.html` : CV et interface du chat.
 - `n8n/question-cv-patrice.v2.json` : export n8n assaini du workflow conversationnel.
 - `n8n/cv-event.json` : instrumentation légère et agrégée.
-- `rag/` : notes canoniques destinées à la collection `RAG_CV`.
+- `n8n/♾️RAG_TEST (Ingestion Locale).md` : fonctionnement et limites de l'ingestion RAG, sans contenu des notes.
 - `n8n/*.md` : documentation d'exploitation, sans credentials.
+
+Les notes personnelles utilisées pour alimenter `RAG_CV` restent dans un dossier privé, hors de ce dépôt. Le dépôt public n'est pas la source documentaire du RAG en production.
 
 ## Architecture
 
@@ -66,7 +68,7 @@ Les exports publics ne contiennent aucun credential ni identifiant d'instance. A
 3. publier d'abord le workflow `cv-event` ;
 4. remplacer ensuite le workflow `question-cv-patrice` en conservant son chemin public ;
 5. tester une question valide, une question trop longue et la limite de requêtes ;
-6. réindexer les notes du dossier `rag/` dans `RAG_CV`.
+6. réindexer les notes depuis le dossier privé monté dans n8n, en suivant la [documentation de l'ingestion](<n8n/♾️RAG_TEST (Ingestion Locale).md>).
 
 Ne jamais versionner de secret, de jeton, de valeur `.env`, d'identifiant d'instance ou d'export contenant des credentials privés.
 
@@ -77,3 +79,4 @@ node tests/verify.mjs
 ```
 
 Le script vérifie les invariants XSS, les URL conservées, l'instrumentation, la validité JSON et l'absence de bloc `credentials` dans les exports publics.
+
