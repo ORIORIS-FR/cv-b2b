@@ -63,13 +63,12 @@ const eventWorkflow = JSON.parse(await read('n8n/cv-event.json'));
 const eventCode = eventWorkflow.nodes.find((node) => node.name === 'Valider et agréger').parameters.jsCode;
 assert.ok(!/headers|user-agent|cf-connecting-ip|x-forwarded-for/i.test(eventCode), 'Le workflow analytics ne doit pas conserver les en-têtes ou IP.');
 
-const ragDirectory = path.join(root, 'rag');
-const ragFiles = (await readdir(ragDirectory)).filter((name) => name.endsWith('.md'));
-assert.ok(ragFiles.length >= 5, 'Les notes RAG attendues sont absentes.');
-for (const file of ragFiles) {
-  const contents = await read(path.join('rag', file));
-  assert.match(contents, /^---[\s\S]*rag_sync: true[\s\S]*---/, `Frontmatter RAG invalide : ${file}`);
-}
+const publicFiles = await readdir(root);
+const ragFiles = publicFiles.includes('rag') ? await readdir(path.join(root, 'rag')) : [];
+assert.equal(ragFiles.filter((name) => name.endsWith('.md')).length, 0, 'Les notes RAG privées ne doivent pas être publiées.');
+const ingestionDoc = await read('n8n/♾️RAG_TEST (Ingestion Locale).md');
+assert.ok(ingestionDoc.includes('RAG_CV') && ingestionDoc.includes('insert'), 'La documentation d’ingestion doit décrire la collection et sa limite de mise à jour.');
+assert.match(await read('.gitignore'), /^\/rag\/\s*$/m, 'Le dossier des notes RAG doit être ignoré.');
 
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map((match) => match[1])
@@ -78,5 +77,5 @@ for (const script of inlineScripts) {
   new Function(script);
 }
 
-console.log(`OK — frontend, ${workflowFiles.length} workflows et ${ragFiles.length} notes RAG vérifiés.`);
+console.log(`OK — frontend, ${workflowFiles.length} workflows et confidentialité des notes RAG vérifiés.`);
 
