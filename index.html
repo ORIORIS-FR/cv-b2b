@@ -9,7 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Moteur Markdown & Style GitHub -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 
     <style>
         :root {
@@ -166,6 +167,10 @@
         .markdown-body ul { list-style-type: disc !important; padding-left: 1.5em !important; }
         .markdown-body pre { background-color: #f6f8fa !important; border-radius: 6px; padding: 10px; }
         .markdown-body code { font-size: 0.85em; background-color: rgba(175, 184, 193, 0.2); padding: 0.2em 0.4em; border-radius: 6px; }
+        .chat-msg.user { align-self: flex-end; max-width: 90%; background: #2c3e50; color: white; padding: 10px 12px; border-radius: 10px 10px 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .answer-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .answer-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid #e67e22; border-radius: 6px; color: #9a4b10; text-decoration: none; font-weight: 600; font-size: 0.8rem; }
+        .answer-link:hover { background: #fff7ed; }
     </style>
 </head>
 <body class="bg-gray-600">
@@ -222,7 +227,7 @@
             <div class="mt-6 pt-4 border-t border-white/20">
                 <h2 class="font-bold text-accent uppercase pb-2 mb-2 text-xs">Écosystème Technique 🚀</h2>
                 
-                <a href="https://cv.orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
+                <a href="https://cv.orioris.com" target="_blank" rel="noopener noreferrer" data-cv-event="click_orioris" data-cv-target="cv" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
                     <i class="fas fa-terminal text-accent w-5 text-center text-lg"></i>
                     <div class="leading-tight">
                         <strong class="block text-sm">Hub Principal</strong>
@@ -230,7 +235,7 @@
                     </div>
                 </a>
 
-                <a href="https://git.orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
+                <a href="https://git.orioris.com" target="_blank" rel="noopener noreferrer" data-cv-event="click_git" data-cv-target="git" style="text-decoration: none;" class="flex items-center gap-3 mb-3 text-white hover:text-accent transition-colors">
                     <i class="fab fa-github text-accent w-5 text-center text-lg"></i>
                     <div class="leading-tight">
                         <strong class="block text-sm">Dépôts GitHub</strong>
@@ -238,7 +243,7 @@
                     </div>
                 </a>
 
-                <a href="https://orioris.com" target="_blank" style="text-decoration: none;" class="flex items-center gap-3 text-white hover:text-accent transition-colors">
+                <a href="https://orioris.com" target="_blank" rel="noopener noreferrer" data-cv-event="click_orioris" data-cv-target="orioris" style="text-decoration: none;" class="flex items-center gap-3 text-white hover:text-accent transition-colors">
                     <i class="fas fa-project-diagram text-accent w-5 text-center text-lg"></i>
                     <div class="leading-tight">
                         <strong class="block text-sm">Projet Orioris</strong>
@@ -250,7 +255,7 @@
             <div class="mt-8 pt-4 border-t border-white/20">
                 <h2 class="font-bold text-accent uppercase pb-2 mb-2 text-xs">Performance Hub 🚀</h2>
                 
-                <a href="https://drive.google.com/drive/folders/1cxoLwXPXy0IUmi6_1hh8_lcT-3sQ7GhV?usp=drive_link" target="_blank" class="proof-badge group">
+                <a href="https://drive.google.com/drive/folders/1cxoLwXPXy0IUmi6_1hh8_lcT-3sQ7GhV?usp=drive_link" target="_blank" rel="noopener noreferrer" data-cv-event="click_preuves" data-cv-target="preuves" class="proof-badge group">
                     <i class="fas fa-chart-line group-hover:scale-110 transition-transform"></i>
                     <div>
                         <strong>Dossier Preuves & Chiffres</strong>
@@ -258,7 +263,7 @@
                     </div>
                 </a>
 
-                <a href="https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link" target="_blank" class="proof-badge group">
+                <a href="https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link" target="_blank" rel="noopener noreferrer" data-cv-event="click_preuves" data-cv-target="archives" class="proof-badge group">
                     <i class="fas fa-ruler-combined group-hover:scale-110 transition-transform"></i>
                     <div>
                         <strong>Archives Techniques & 3D</strong>
@@ -393,7 +398,112 @@
     </div>
 
     <script>
-        const cvSessionId = Math.random().toString(36).substring(7);
+        const CHAT_ENDPOINT = 'https://n8n.orioris.com/webhook/question-cv-patrice';
+        const EVENT_ENDPOINT = 'https://n8n.orioris.com/webhook/cv-event';
+        const LINK_TOKEN_PATTERN = /\[\[LINK:(cv|git|orioris|preuves|archives)\]\]/gi;
+        const ANSWER_LINKS = Object.freeze({
+            cv: { label: 'CV interactif', href: 'https://cv.orioris.com', event: 'click_orioris' },
+            git: { label: 'Dépôts GitHub', href: 'https://git.orioris.com', event: 'click_git' },
+            orioris: { label: 'Projet ORIORIS', href: 'https://orioris.com', event: 'click_orioris' },
+            preuves: { label: 'Preuves & chiffres', href: 'https://drive.google.com/drive/folders/1cxoLwXPXy0IUmi6_1hh8_lcT-3sQ7GhV?usp=drive_link', event: 'click_preuves' },
+            archives: { label: 'Archives techniques & 3D', href: 'https://drive.google.com/drive/folders/1U8E8ZASnV2SxmWwi70ShFICYZ5ow3jlQ?usp=drive_link', event: 'click_preuves' }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cleanCampaignValue = (value) => (value || '').trim().slice(0, 80);
+        const cvCampaign = Object.freeze({
+            source: cleanCampaignValue(urlParams.get('source') || urlParams.get('src')),
+            company: cleanCampaignValue(urlParams.get('company'))
+        });
+
+        function getOrCreateSessionId() {
+            const storageKey = 'orioris-cv-session-id';
+            try {
+                const existing = sessionStorage.getItem(storageKey);
+                if (existing) return existing;
+                const created = typeof crypto.randomUUID === 'function'
+                    ? crypto.randomUUID()
+                    : `cv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+                sessionStorage.setItem(storageKey, created);
+                return created;
+            } catch (_) {
+                return `cv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+            }
+        }
+
+        const cvSessionId = getOrCreateSessionId();
+
+        function trackEvent(event, details = {}) {
+            const payload = JSON.stringify({
+                event,
+                sessionId: cvSessionId,
+                source: cvCampaign.source,
+                company: cvCampaign.company,
+                page: window.location.pathname,
+                ...details
+            });
+
+            try {
+                if (navigator.sendBeacon && navigator.sendBeacon(EVENT_ENDPOINT, new Blob([payload], { type: 'application/json' }))) return;
+                fetch(EVENT_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: payload,
+                    keepalive: true,
+                    credentials: 'omit'
+                }).catch(() => {});
+            } catch (_) {
+                // L'analytics ne doit jamais gêner l'utilisation du CV.
+            }
+        }
+
+        function appendUserMessage(text) {
+            const message = document.createElement('div');
+            message.className = 'chat-msg user';
+            message.textContent = text;
+            document.getElementById('chat-messages').appendChild(message);
+        }
+
+        function appendBotMessage(markdown, linkKeys = []) {
+            const chat = document.getElementById('chat-messages');
+            const message = document.createElement('div');
+            message.className = 'bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none shadow-sm text-gray-800 markdown-body';
+            const safeHtml = DOMPurify.sanitize(marked.parse(markdown), {
+                USE_PROFILES: { html: true },
+                FORBID_TAGS: ['a', 'script', 'style', 'svg', 'math', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
+                FORBID_ATTR: ['style']
+            });
+            message.innerHTML = safeHtml;
+
+            const uniqueKeys = [...new Set(linkKeys)].filter((key) => ANSWER_LINKS[key]).slice(0, 2);
+            if (uniqueKeys.length) {
+                const links = document.createElement('div');
+                links.className = 'answer-links';
+                uniqueKeys.forEach((key) => {
+                    const config = ANSWER_LINKS[key];
+                    const anchor = document.createElement('a');
+                    anchor.className = 'answer-link';
+                    anchor.href = config.href;
+                    anchor.target = '_blank';
+                    anchor.rel = 'noopener noreferrer';
+                    anchor.textContent = config.label;
+                    anchor.addEventListener('click', () => trackEvent(config.event, { target: key }));
+                    links.appendChild(anchor);
+                });
+                message.appendChild(links);
+            }
+            chat.appendChild(message);
+        }
+
+        function parseAgentOutput(rawValue) {
+            const raw = typeof rawValue === 'string' ? rawValue : '';
+            const linkKeys = [];
+            const answer = raw.replace(LINK_TOKEN_PATTERN, (_, key) => {
+                linkKeys.push(key.toLowerCase());
+                return '';
+            }).trim();
+            return { answer: answer || 'Je ne dispose pas encore d’une réponse exploitable.', linkKeys };
+        }
         function setTheme(name) {
             const container = document.getElementById('app-container');
             container.className = 'theme-' + name;
@@ -415,7 +525,11 @@
             document.querySelectorAll('.editable').forEach(el => { el.contentEditable = false; });
             const txt = document.getElementById('edit-txt');
             if (txt) txt.innerText = "Édition: OFF";
-        });   
+            document.querySelectorAll('[data-cv-event]').forEach((link) => {
+                link.addEventListener('click', () => trackEvent(link.dataset.cvEvent, { target: link.dataset.cvTarget || '' }));
+            });
+            trackEvent('page_view');
+        });
         function toggleEdit() {
             editMode = !editMode;
             document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = editMode);
@@ -433,33 +547,45 @@
         
         function toggleChat() {
             const p = document.getElementById('ai-panel');
-            p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
+            const willOpen = p.style.display !== 'flex';
+            p.style.display = willOpen ? 'flex' : 'none';
+            if (willOpen && !p.dataset.openTracked) {
+                p.dataset.openTracked = 'true';
+                trackEvent('chat_open');
+            }
         }
         
         function handleKeyPress(e) { if(e.key === 'Enter') askBot(); }
 
         async function askBot() {
             const input = document.getElementById('ai-input');
-            const text = input.value;
+            const text = input.value.trim();
             if(!text) return;
             updateIAStatus('busy');
             const chat = document.getElementById('chat-messages');
-            chat.innerHTML += `<div class="chat-msg user">${text}</div>`;
+            appendUserMessage(text);
+            trackEvent('question', { questionLength: text.length });
             input.value = '';
             try {
-                const response = await fetch('https://n8n.orioris.com/webhook/question-cv-patrice', {
+                const response = await fetch(CHAT_ENDPOINT, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question: text, sessionId: cvSessionId })
+                    body: JSON.stringify({
+                        question: text,
+                        sessionId: cvSessionId,
+                        source: cvCampaign.source,
+                        company: cvCampaign.company
+                    }),
+                    credentials: 'omit'
                 });
-                const data = await response.json();
-                const iaResponse = data.output || data.text || "Message reçu par le Bunker.";
-                const formattedResponse = marked.parse(iaResponse);
-                chat.innerHTML += `<div class="bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none shadow-sm text-gray-800 markdown-body">${formattedResponse}</div>`;
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+                const parsed = parseAgentOutput(data.output || data.text || 'Message reçu par le système.');
+                appendBotMessage(parsed.answer, parsed.linkKeys);
                 updateIAStatus('ok');
             } catch(e) {
                 console.error("Erreur Bunker :", e);
-                chat.innerHTML += `<div class="chat-msg bot">Bunker hors-ligne ou bloqué par CORS.</div>`;
+                appendBotMessage('Le service de réponse est momentanément indisponible. Vous pouvez réessayer dans quelques instants.');
                 updateIAStatus('off');
             }
             chat.scrollTop = chat.scrollHeight;
